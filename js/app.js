@@ -275,6 +275,7 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
   }
   resize(); addEventListener('resize', resize);
+  if(!W){ const wait = setInterval(()=>{ if(wrap.clientWidth){ resize(); clearInterval(wait); } }, 200); }
 
   /* v1 physics: used for pre-settle and drag reheats only */
   function tick(){
