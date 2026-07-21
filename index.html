@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>louiseivan — x vault</title>
+<meta name="description" content="X performance dashboard for @louiseivan. 200 posts, 8 niches, ranked by impressions and bookmark rate, built on the open-source X algorithm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="vault">vault</div>
+    <div class="vname">louiseivan <span>/</span> x</div>
+    <nav class="nav" id="nav">
+      <a href="#overview" class="on"><span class="ico">◈</span>Overview</a>
+      <a href="#graph-view"><span class="ico">⌬</span>Graph view</a>
+      <a href="#niches"><span class="ico">▤</span>Niches</a>
+      <a href="#hooks"><span class="ico">❝</span>Formats</a>
+      <a href="#reels"><span class="ico">≡</span>All posts</a>
+      <a href="#playbook"><span class="ico">➤</span>Playbook</a>
+      <a href="#plan"><span class="ico">▦</span>Content plan</a>
+    </nav>
+    <div class="side-meta" id="sidemeta"></div>
+  </aside>
+
+  <main class="main">
+    <section id="overview">
+      <div class="crumb">vault <em>/</em> x <em>/</em> overview</div>
+      <h1>X performance vault</h1>
+      <p class="sub">Every post on @louiseivan from the X analytics export, classified by niche and format, and ranked the way the open-source algorithm ranks: replies and profile clicks over likes, bookmarks as the authority signal.</p>
+      <div class="cards" id="statcards"></div>
+      <div class="panelbox">
+        <div class="tlhead">
+          <h3 id="tltitle">Impressions per week · all time</h3>
+          <div class="tlctl">
+            <div class="mnav" id="mnav" hidden>
+              <button id="mprev" aria-label="Previous month">‹</button>
+              <span id="mlabel" class="mono"></span>
+              <button id="mnext" aria-label="Next month">›</button>
+            </div>
+            <div class="seg" id="rangeseg" role="tablist" aria-label="Time range">
+              <button id="r90" role="tab" aria-selected="false">90d</button>
+              <button id="rall" class="on" role="tab" aria-selected="true">All</button>
+            </div>
+            <div class="seg" role="tablist" aria-label="Timeline mode">
+              <button id="modeweek" class="on" role="tab" aria-selected="true">Weekly</button>
+              <button id="modecal" role="tab" aria-selected="false">Calendar</button>
+            </div>
+          </div>
+        </div>
+        <svg id="tl"></svg>
+        <div id="cal" hidden></div>
+        <div id="tldetail" hidden></div>
+      </div>
+    </section>
+
+    <section id="graph-view">
+      <div class="crumb">vault <em>/</em> x <em>/</em> graph</div>
+      <h2>Graph view</h2>
+      <p class="sub">A live X intelligence engine in obsidian glass. Content formats and engagement signals stream in from the left, fuse in the processing core, and fan out into niche performance clusters — brighter, faster streams mark what wins. Hover any node for real numbers, click an orbiting insight node to open the post.</p>
+      <div id="graphwrap">
+        <div id="ghud">
+          <div class="gchip" id="gstatus"><span class="pulsedot"></span><span id="gstate" class="glab">live · x intelligence</span><span class="gsep">·</span><span id="gevents" class="mono">0 events</span></div>
+          <div id="gchips"></div>
+        </div>
+        <canvas id="graph"></canvas>
+        <div id="gtip"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <p class="gnote">Live engine over 200 X posts. Stream brightness follows real totals, cluster size follows impressions, orbiting nodes are the top posts of each niche.</p>
+    </section>
+
+    <section id="niches">
+      <div class="crumb">vault <em>/</em> x <em>/</em> niches</div>
+      <h2>Niche performance</h2>
+      <p class="sub">Average impressions tell you what the algorithm pushes. Bookmarks per 1,000 impressions tell you what positions you as a thought leader. The two rankings do not agree, and that gap is the whole strategy.</p>
+      <div class="duo">
+        <div class="panelbox"><h3>Avg impressions per post</h3><div class="bars" id="nviews"></div></div>
+        <div class="panelbox"><h3>Bookmarks per 1,000 impressions</h3><div class="bars" id="nsaves"></div></div>
+      </div>
+      <div class="duo" style="margin-top:14px">
+        <div class="panelbox"><h3>Median impressions (consistency)</h3><div class="bars" id="nmed"></div></div>
+        <div class="panelbox"><h3>Total reposts + quotes</h3><div class="bars" id="nshares"></div></div>
+      </div>
+    </section>
+
+    <section id="hooks">
+      <div class="crumb">vault <em>/</em> x <em>/</em> hooks</div>
+      <h2>Format performance</h2>
+      <p class="sub">Which post formats actually earn the feed. Note tweets, greentext timelines, and proof posts each play a different algorithmic game.</p>
+      <div class="duo">
+        <div class="panelbox"><h3>Avg impressions by format</h3><div class="bars" id="hviews"></div></div>
+        <div class="panelbox"><h3>Bookmarks per 1,000 impressions by format</h3><div class="bars" id="hsaves"></div></div>
+      </div>
+      <div class="duo" style="margin-top:14px">
+        <div class="panelbox"><h3>Best posts by impressions</h3><div id="besthooks-views" class="hooklist"></div></div>
+        <div class="panelbox"><h3>Best posts by bookmark rate (1K+ impressions)</h3><div id="besthooks-saves" class="hooklist"></div></div>
+      </div>
+    </section>
+
+    <section id="reels">
+      <div class="crumb">vault <em>/</em> x <em>/</em> posts</div>
+      <h2>All posts</h2>
+      <div class="toolbar">
+        <input id="q" type="search" placeholder="Search captions…" aria-label="Search captions">
+        <select id="fniche" aria-label="Filter by niche"><option value="">All niches</option></select>
+        <span class="count" id="rowcount"></span>
+      </div>
+      <div class="tblwrap">
+        <table id="tbl">
+          <thead><tr>
+            <th data-k="cap">Post</th>
+            <th data-k="views" class="sorted">Impr ↓</th>
+            <th data-k="saves">Bookm</th>
+            <th data-k="shares">Reposts</th>
+            <th data-k="fol">Prof clk</th>
+            <th data-k="likes">Likes</th>
+            <th data-k="comments">Replies</th>
+            <th data-k="watch">Eng %</th>
+            <th data-k="ts">Date</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <p class="gnote">Prof clk: user_profile_clicks from the X analytics export. Eng %: total engagements over impressions.</p>
+    </section>
+
+    <section id="playbook">
+      <div class="crumb">vault <em>/</em> x <em>/</em> playbook</div>
+      <h2>The algorithm, and what to do about it</h2>
+      <div id="playout"></div>
+    </section>
+
+    <section id="plan">
+      <div class="crumb">vault <em>/</em> x <em>/</em> content plan</div>
+      <h2>Next 60 days</h2>
+      <p class="sub">One post per day, Jul 22 to Sep 19, built on three sources: the open-source heavy-ranker weights (replies 13.5, profile clicks 12, author-engaged replies 75, likes 0.5), the willitgoviral.xyz pre-flight check, and what actually worked on this account. Click a day for the full card: opener options, post skeleton, structure, key lines, full draft, and the reason it earns the slot.</p>
+      <div class="planlegend">
+        <span><span class="pl-pill t-Builder">Builder</span></span><span><span class="pl-pill t-AI">AI</span></span>
+        <span><span class="pl-pill t-Story">Story</span></span>
+        <span><span class="pl-pill t-Fundraising">Fundraising</span></span>
+        <span><span class="pl-pill t-Ryder">Ryder</span></span>
+        <span><span class="pl-pill t-Community">Community</span></span>
+      </div>
+      <div id="plancal"></div>
+      <div id="plandetail" hidden></div>
+    </section>
+  </main>
+</div>
+<footer>Data: X analytics export · ranking logic from github.com/twitter/the-algorithm + xai-org/x-algorithm · pre-flight via willitgoviral.xyz · static site</footer>
+<script src="js/data.js"></script>
+<script src="js/plan.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
