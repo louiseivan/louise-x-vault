@@ -10,7 +10,7 @@ Static site. No build step. Open `index.html` and it runs.
 
 **2. The pre-flight check.** Every draft gets scored at [willitgoviral.xyz](https://willitgoviral.xyz/) before posting. Under 60, rewrite the opener. Links always go in the first reply, never the post.
 
-**3. The account's own archive.** 200 posts (Jan–May 2026) from the X analytics export, classified into 8 niches. Findings: longform note tweets run 10x the account median (top post 21.8K impressions), greentext timelines proved out twice, and personal stories are the reply engine (37–64 replies against a median of 2).
+**3. The account's own archive.** A full year of posts (Jul 2025 – Jul 2026, 405 posts) pulled from Typefully via Composio, with engagement metrics joined from the X analytics export where its window (Jan 13 – May 21, 2026, 200 posts) overlaps. Classified into 8 niches. Findings: longform note tweets run 10x the account median (top post 21.8K impressions), greentext timelines proved out twice, and personal stories are the reply engine (37–64 replies against a median of 2).
 
 ## Sections
 
@@ -33,7 +33,7 @@ Overview · Graph view · Niches · Formats · All posts · Playbook (the algori
 ```
 index.html      layout and sections
 css/style.css   theme (shared with the creator vault)
-js/data.js      200 classified posts from the X analytics export
+js/data.js      405 classified posts: full year via Typefully, metrics from the X analytics export
 js/plan.js      the 60-day plan, one const
 js/app.js       aggregation, charts, graph engine, table, playbook, plan calendar
 data/*.csv      the raw X analytics exports
@@ -41,4 +41,4 @@ data/*.csv      the raw X analytics exports
 
 ## Updating the data
 
-Export fresh analytics CSVs from X, drop them in `data/`, and regenerate `js/data.js` (the classifier lives in the repo history). Followers and date range are set in `js/app.js`.
+Export fresh analytics CSVs from X, drop them in `data/`, and regenerate `js/data.js` (the classifier lives in the repo history). The post inventory refreshes from Typefully via Composio (social set 217350, status=published). Followers and date ranges are set in `js/app.js`.

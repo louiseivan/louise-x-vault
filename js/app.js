@@ -12,7 +12,8 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- aggregates ---------- */
 const byNiche = {};
-DATA.forEach(d=>{
+const METRIC = DATA.filter(d=>d.ok);
+METRIC.forEach(d=>{
   const a = byNiche[d.niche] || (byNiche[d.niche]={n:0,v:0,s:0,sh:0,l:0,c:0,views:[]});
   a.n++; a.v+=d.views; a.s+=d.saves; a.sh+=d.shares; a.l+=d.likes; a.c+=d.comments; a.views.push(d.views);
 });
@@ -23,17 +24,17 @@ Object.values(byNiche).forEach(a=>{
   a.saveRate = a.s/Math.max(a.v,1)*1000;
 });
 const byHook = {};
-DATA.forEach(d=>{
+METRIC.forEach(d=>{
   const a = byHook[d.hook] || (byHook[d.hook]={n:0,v:0,s:0});
   a.n++; a.v+=d.views; a.s+=d.saves;
 });
 Object.values(byHook).forEach(a=>{a.avg=Math.round(a.v/a.n); a.saveRate=a.s/Math.max(a.v,1)*1000;});
-const totals = DATA.reduce((t,d)=>({v:t.v+d.views,s:t.s+d.saves,sh:t.sh+d.shares,l:t.l+d.likes,c:t.c+d.comments}),{v:0,s:0,sh:0,l:0,c:0});
+const totals = METRIC.reduce((t,d)=>({v:t.v+d.views,s:t.s+d.saves,sh:t.sh+d.shares,l:t.l+d.likes,c:t.c+d.comments}),{v:0,s:0,sh:0,l:0,c:0});
 
 /* ---------- stat cards + sidebar ---------- */
 document.getElementById('statcards').innerHTML = [
-  ['Posts analyzed', DATA.length, 'posts + notes'],
-  ['Total impressions', fmt(totals.v), 'lifetime'],
+  ['Posts analyzed', DATA.length, 'full year via Typefully'],
+  ['Total impressions', fmt(totals.v), 'metrics window'],
   ['Bookmarks', fmt(totals.s), 'authority signal'],
   ['Reposts + quotes', fmt(totals.sh), 'distribution signal'],
   ['Followers', '8,694', 'at export time'],
@@ -44,7 +45,7 @@ document.getElementById('sidemeta').innerHTML =
   '<div class="row"><span>posts</span><b>'+DATA.length+'</b></div>'+
   '<div class="row"><span>niches</span><b>'+Object.keys(byNiche).length+'</b></div>'+
   '<div class="row"><span>views</span><b>'+fmt(totals.v)+'</b></div>'+
-  '<div class="row"><span>data thru</span><b>2026-05-21</b></div>';
+  '<div class="row"><span>posts thru</span><b>2026-07-21</b></div>'+'<div class="row"><span>metrics thru</span><b>2026-05-21</b></div>';
 
 /* ---------- bars ---------- */
 function bars(el, rows, colorFn, valFmt){
@@ -633,7 +634,7 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
     tbody.innerHTML = rows.map(d=>`<tr>
       <td><a class="rowcap" href="${d.url}" target="_blank" rel="noopener">${esc(d.cap)||'(no caption)'}</a>
         <div class="rowmeta"><span class="tag" style="color:${nc(d.niche)};background:${nc(d.niche)}18">${d.niche}</span> · ${d.hook} · ${d.type}</div></td>
-      <td>${fmt(d.views)}</td><td>${fmt(d.saves)}</td><td>${fmt(d.shares)}</td><td>${d.fol==null?'\u2013':d.fol}</td>
+      <td>${d.ok?fmt(d.views):'\u2013'}</td><td>${d.ok?fmt(d.saves):'\u2013'}</td><td>${d.ok?fmt(d.shares):'\u2013'}</td><td>${d.fol==null?'\u2013':d.fol}</td>
       <td>${fmt(d.likes)}</td><td>${d.comments}</td><td>${d.watch||'–'}</td>
       <td>${d.ts.slice(0,10)}</td></tr>`).join('');
   }
@@ -658,10 +659,10 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
       <div class="hktext">${esc(firstLine(d.cap) || '(visual hook, no caption)')}</div>
       <div class="hkmeta"><span class="tag" style="color:${nc(d.niche)};background:${nc(d.niche)}18">${d.hook}</span> ${metric}</div>
     </div></a>`;
-  const byViews = [...DATA].sort((a,b)=>b.views-a.views).slice(0,8);
+  const byViews = [...METRIC].sort((a,b)=>b.views-a.views).slice(0,8);
   document.getElementById('besthooks-views').innerHTML =
     byViews.map(d=>item(d, fmt(d.views)+' impr · '+fmt(d.saves)+' bookmarks')).join('');
-  const bySaveRate = DATA.filter(d=>d.views>=1000)
+  const bySaveRate = METRIC.filter(d=>d.views>=1000)
     .map(d=>({d, r:d.saves/d.views*1000}))
     .sort((a,b)=>b.r-a.r).slice(0,8);
   document.getElementById('besthooks-saves').innerHTML =
