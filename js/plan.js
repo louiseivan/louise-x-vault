@@ -7,6 +7,10 @@
       timelines proven 2x, personal stories are the reply engine (37-64 replies vs median 2).
    Cadence: Mon builder take, Tue fundraising note (8-part vault-sourced series), Wed Ryder
    proof, Thu longform note, Fri AI/tech, Sat story, Sun community reply-day. */
+/* 2026-07-21 viral cut: 60 -> 45. Re-scored against the fresh year of data (personal stories
+   9.9K top, vs-comparison series proven, contrarian insider takes, notes 10x median). The 15
+   weakest slots were cut; blank calendar days are deliberate rest days. All 8 fundraising
+   series parts survive. */
 const PLAN = [
  {
   "date": "2026-07-22",
@@ -101,52 +105,6 @@ const PLAN = [
   "cta": "Note tweet. Quote-post the best line tomorrow morning."
  },
  {
-  "date": "2026-07-24",
-  "name": "My 9-person company runs like 30 people. Six AI workflows do the difference.",
-  "topic": "AI",
-  "mission": "Authority",
-  "format": "Short post",
-  "intensity": "Medium",
-  "niche": "AI / Tech",
-  "hookType": "Take/Education",
-  "framework": "Conditional Hack + Numbered Listicle",
-  "why": "AI content is the IG account's authority leader; porting the pillar to X. Slot: Friday AI/tech (bookmark pillar).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "My 9-person company runs like 30 people. Six AI workflows do the difference.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Six workflows replaced the head count we never hired.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "9 people, 68 countries, 6 AI workflows. That's the whole org chart.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: My 9-person company runs like 30 people. BUILD: body per draft below. PAYOFF: None of them needed a PhD to set up. Stack in the replies. REPLY PLAN: Reply with the exact stack/steps as a follow-up post. Answer implementation questions; each answered thread is a 75-weight event.",
-  "shots": [
-   "Claim with a number in line 1",
-   "2-4 concrete items, no fluff",
-   "Offer depth in the replies, not a link",
-   "Screenshot beats description"
-  ],
-  "overlay": [
-   "9 people run like 30",
-   "6 workflows, listed",
-   "the stack in the replies"
-  ],
-  "caption": "My 9-person company runs like 30 people.\n\nSix AI workflows do the difference: content research, competitor watch, support triage, investor-meeting prep, publishing, and analytics pulls.\n\nNone of them needed a PhD to set up. Stack in the replies.",
-  "cta": "Post the exact stack as the first reply."
- },
- {
   "date": "2026-07-25",
   "name": "> moved abroad at 21",
   "topic": "Story",
@@ -191,52 +149,6 @@ const PLAN = [
   ],
   "caption": "> moved abroad at 21\n> zero contacts, no plan B\n> $5K grant, side project\n> co-founder pitched me, I said no\n> he came back with a prototype\n> $42K in the bank, no salaries\n> Tim Draper led our seed\n> shipped to 68 countries\n> Red Dot Award 2026\n\nThe middle took ten years.",
   "cta": "Reply to every personal response."
- },
- {
-  "date": "2026-07-26",
-  "name": "Founders: if you had to delete every tool except one, what survives?",
-  "topic": "Community",
-  "mission": "Replies",
-  "format": "Question post",
-  "intensity": "Low",
-  "niche": "GM / Community",
-  "hookType": "Question",
-  "framework": "Audience Callout",
-  "why": "Question posts feed the 13.5-weight reply signal at near-zero production cost. Slot: Sunday community day (author-engaged replies weigh 75).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Founders: if you had to delete every tool except one, what survives?",
-    "o": "Question post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "You can keep exactly one tool. Everything else is gone. What is it?",
-    "o": "Question post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "One tool survives the purge. Name it.",
-    "o": "Question post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Founders: if you had to delete every tool except one, what survives? BUILD: body per draft below. PAYOFF: Mine's in the replies. REPLY PLAN: This is the 75x day: the post is the prompt, the replies are the content. Respond to everything for the first 2 hours. Quote the best answer next day.",
-  "shots": [
-   "One question, one line",
-   "Make it answerable in 10 seconds",
-   "Zero setup, zero links",
-   "Your first reply sets the tone"
-  ],
-  "overlay": [
-   "one question, ten-second answer",
-   "replies are the content",
-   "quote the best answer tomorrow"
-  ],
-  "caption": "Founders: if you had to delete every tool except one, what survives?\n\nMine's in the replies.",
-  "cta": "Answer everything for 2 hours; quote the best reply tomorrow."
  },
  {
   "date": "2026-07-27",
@@ -329,52 +241,6 @@ const PLAN = [
   ],
   "caption": "Our first investor check came from a DM. $250K, wired the next day.\n\nNo deck meeting. No intro. Someone had watched us build on X for a year, took one call, and wired it in the morning.\n\nIt looked like luck. It was twelve months of receipts he could scroll.\n\nInvestors don't bet on the call. They bet on everything they saw before it.",
   "cta": "End-line is the bookmark; pin 'raising right now? what stage?' as first reply."
- },
- {
-  "date": "2026-07-29",
-  "name": "Your seed phrase is the weakest part of your crypto.",
-  "topic": "Ryder",
-  "mission": "Convert",
-  "format": "Short post + media",
-  "intensity": "Medium",
-  "niche": "Crypto / Ryder",
-  "hookType": "Announcement/Proof",
-  "framework": "Demo / Unboxing",
-  "why": "Product education post; his crypto-simple takes median 3.6K imp. Slot: Wednesday Ryder proof (profile clicks weigh 12).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Your seed phrase is the weakest part of your crypto.",
-    "o": "Short post + media",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "24 words on paper is not security. It's a single point of failure you carry in a drawer.",
-    "o": "Short post + media",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "If your life savings fit on a napkin, that's not security.",
-    "o": "Short post + media",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Your seed phrase is the weakest part of your crypto. BUILD: body per draft below. PAYOFF: We built Ryder to kill it: tap, 60 seconds, no seed phrase. Recovery that works like a normal product. REPLY PLAN: Reply to the post with the product link (links in the first post cost reach). Answer every product question same-day.",
-  "shots": [
-   "Proof first: award, country count, or demo clip",
-   "One sentence of what it means for a normal person",
-   "Media attached: photo or 30s clip",
-   "Product link goes in the first reply"
-  ],
-  "overlay": [
-   "the napkin problem",
-   "60 seconds, no seed phrase",
-   "self-custody for normal people"
-  ],
-  "caption": "Your seed phrase is the weakest part of your crypto.\n\n24 words on paper. Lose them, you lose everything. Anyone finds them, they own everything. That's not security, that's a single point of failure in a drawer.\n\nWe built Ryder to kill it: tap, 60 seconds, no seed phrase. Recovery that works like a normal product.",
-  "cta": "Demo clip attached; link in first reply."
  },
  {
   "date": "2026-07-30",
@@ -699,52 +565,6 @@ const PLAN = [
   "cta": "Map graphic attached; country stories in replies."
  },
  {
-  "date": "2026-08-06",
-  "name": "The gap between 'we shipped' and 'people trust us with their money' is the actua",
-  "topic": "Note",
-  "mission": "Authority",
-  "format": "Note tweet",
-  "intensity": "High",
-  "niche": "Builder Takes",
-  "hookType": "Longform Essay",
-  "framework": "Vulnerable Origin + Brutal Honesty",
-  "why": "Trust-building essay; dwell + bookmark signal. Slot: Thursday longform note (dwell signal; account's proven 10x format).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "The gap between 'we shipped' and 'people trust us with their money' is the actual company.",
-    "o": "Note tweet",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Shipping was the easy half. Trust was the company.",
-    "o": "Note tweet",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Everything after launch day turned out to be the business.",
-    "o": "Note tweet",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: The gap between 'we shipped something' and 'people trust us with their money' is the actual company. BUILD: body per draft below. PAYOFF: Nobody claps for any of that. It's also the only reason we're still here. REPLY PLAN: Notes earn dwell time, the quiet ranked signal. Quote-post your own note the next morning with the single best line to give it a second run.",
-  "shots": [
-   "First line is the whole argument",
-   "Short paragraphs, one idea each",
-   "One real number every 3 paragraphs",
-   "End on the uncomfortable part, not the lesson"
-  ],
-  "overlay": [
-   "shipping vs trust",
-   "the actual company",
-   "what earned it"
-  ],
-  "caption": "The gap between 'we shipped something' and 'people trust us with their money' is the actual company.\n\nLaunch got us attention. What earned trust was slower: answering support at 2am, replacing units that failed, publishing the security model, monthly updates when the news was bad.\n\nNobody claps for any of that. It's also the only reason we're still here.",
-  "cta": "Note tweet; morning quote-post."
- },
- {
   "date": "2026-08-07",
   "name": "I fed an AI 200 of my own posts. It found the pattern I refused to see.",
   "topic": "AI",
@@ -835,52 +655,6 @@ const PLAN = [
   ],
   "caption": "> mom left when I was 7\n> didn't speak to her for 11 years\n> ran away from home at 16\n> moved abroad at 21, zero contacts\n> said no to my co-founder, twice\n> $5K grant became a company\n> Draper led the seed\n> Red Dot Award at 31\n\nNone of it felt like a story while it was happening.",
   "cta": "Personal replies only, no copy-paste."
- },
- {
-  "date": "2026-08-09",
-  "name": "gm. what are you shipping this week?",
-  "topic": "Community",
-  "mission": "Replies",
-  "format": "Question post",
-  "intensity": "Low",
-  "niche": "GM / Community",
-  "hookType": "Question",
-  "framework": "Audience Callout",
-  "why": "GM ritual + accountability loop = recurring reply engine. Slot: Sunday community day (author-engaged replies weigh 75).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "gm. what are you shipping this week?",
-    "o": "Question post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Monday list: what's going live this week? Reply with one thing.",
-    "o": "Question post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "One thing you're shipping this week. Just one.",
-    "o": "Question post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: gm. what are you shipping this week? BUILD: body per draft below. PAYOFF: One thing. Reply and I'll check on you Friday. REPLY PLAN: This is the 75x day: the post is the prompt, the replies are the content. Respond to everything for the first 2 hours. Quote the best answer next day.",
-  "shots": [
-   "One question, one line",
-   "Make it answerable in 10 seconds",
-   "Zero setup, zero links",
-   "Your first reply sets the tone"
-  ],
-  "overlay": [
-   "one thing, one line",
-   "accountability thread",
-   "check-in Friday"
-  ],
-  "caption": "gm. what are you shipping this week?\n\nOne thing. Reply and I'll check on you Friday.",
-  "cta": "Actually check on them Friday; that follow-through is the account."
  },
  {
   "date": "2026-08-10",
@@ -1297,52 +1071,6 @@ const PLAN = [
   "cta": "Bookmark-bait close; answer stage questions."
  },
  {
-  "date": "2026-08-19",
-  "name": "Crypto only feels natural when three things are true: simple, safe, everyday.",
-  "topic": "Ryder",
-  "mission": "Convert",
-  "format": "Short post + media",
-  "intensity": "Medium",
-  "niche": "Crypto / Ryder",
-  "hookType": "Announcement/Proof",
-  "framework": "Demo / Unboxing",
-  "why": "Evolved from his 3.6K crypto-natural post. Slot: Wednesday Ryder proof (profile clicks weigh 12).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Crypto only feels natural when three things are true: simple, safe, everyday.",
-    "o": "Short post + media",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "The mainstream test for crypto is boring on purpose.",
-    "o": "Short post + media",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "If your mom can't use it, it isn't mainstream. It's a hobby.",
-    "o": "Short post + media",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Crypto only feels natural when three things are true: BUILD: body per draft below. PAYOFF: Every product decision at Ryder runs against those three. If a feature fails one, it doesn't ship. The next billion user REPLY PLAN: Reply to the post with the product link (links in the first post cost reach). Answer every product question same-day.",
-  "shots": [
-   "Proof first: award, country count, or demo clip",
-   "One sentence of what it means for a normal person",
-   "Media attached: photo or 30s clip",
-   "Product link goes in the first reply"
-  ],
-  "overlay": [
-   "simple, safe, everyday",
-   "the mom test",
-   "what we build against"
-  ],
-  "caption": "Crypto only feels natural when three things are true:\n\n• it's simple\n• it's safe\n• it fits everyday life\n\nEvery product decision at Ryder runs against those three. If a feature fails one, it doesn't ship. The next billion users aren't waiting for more complexity.",
-  "cta": "Reply: which of the three does crypto fail worst today?"
- },
- {
   "date": "2026-08-20",
   "name": "Big platforms should protect builders, not shut them down over their own mistake",
   "topic": "Note",
@@ -1527,52 +1255,6 @@ const PLAN = [
   "cta": "Engage all takes; quote the sharpest."
  },
  {
-  "date": "2026-08-24",
-  "name": "Nobody cares about your product demo. They care about the before and after.",
-  "topic": "Builder",
-  "mission": "Replies",
-  "format": "Short post",
-  "intensity": "High",
-  "niche": "Builder Takes",
-  "hookType": "Contrarian/Hard Truth",
-  "framework": "Pattern Interrupt",
-  "why": "Marketing take with the product woven in; dual-purpose. Slot: Monday builder take (reply weight 13.5).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Nobody cares about your product demo. They care about the before and after.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Your demo shows features. The before/after shows the reason to care.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Kill the demo. Show the delta.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Nobody cares about your product demo. They care about the before and after. BUILD: body per draft below. PAYOFF: Nobody remembers our feature list. Everyone remembers the delta. Sell the delta. REPLY PLAN: Post the take, then reply to your own post with the strongest counterargument to seed the debate. Respond to the first 10 replies within the hour (author-engaged replies weigh 75).",
-  "shots": [
-   "Line 1: the take, no context",
-   "Line 2-3: one proof from building Ryder",
-   "Last line: the rule, quotable",
-   "No link, no hashtag"
-  ],
-  "overlay": [
-   "demo vs delta",
-   "before: 24 words on paper",
-   "after: 60 seconds, one tap"
-  ],
-  "caption": "Nobody cares about your product demo. They care about the before and after.\n\nOurs:\nBefore: 24-word seed phrase on paper, one mistake from zero.\nAfter: tap, 60 seconds, recoverable.\n\nNobody remembers our feature list. Everyone remembers the delta. Sell the delta.",
-  "cta": "Pin: 'what's your before/after?'"
- },
- {
   "date": "2026-08-25",
   "name": "We told our own investors: put more in, or we probably don't make it.",
   "topic": "Fundraising",
@@ -1711,52 +1393,6 @@ const PLAN = [
   "cta": "Note tweet; bookmark magnet; expand any item on request in replies."
  },
  {
-  "date": "2026-08-28",
-  "name": "Cancel the 12 AI subscriptions. Three workflows replace them.",
-  "topic": "AI",
-  "mission": "Authority",
-  "format": "Short post",
-  "intensity": "Medium",
-  "niche": "AI / Tech",
-  "hookType": "Take/Education",
-  "framework": "Conditional Hack + Numbered Listicle",
-  "why": "Consolidation listicle; bookmark rate leader pattern. Slot: Friday AI/tech (bookmark pillar).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Cancel the 12 AI subscriptions. Three workflows replace them.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Your AI stack is a subscription graveyard. Three workflows do the work.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "12 tools → 3 workflows. The consolidation post.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Cancel the 12 AI subscriptions. Three workflows replace them: BUILD: body per draft below. PAYOFF: Everything else is a demo you pay monthly to not use. REPLY PLAN: Reply with the exact stack/steps as a follow-up post. Answer implementation questions; each answered thread is a 75-weight event.",
-  "shots": [
-   "Claim with a number in line 1",
-   "2-4 concrete items, no fluff",
-   "Offer depth in the replies, not a link",
-   "Screenshot beats description"
-  ],
-  "overlay": [
-   "12 → 3",
-   "what each workflow eats",
-   "stack in replies"
-  ],
-  "caption": "Cancel the 12 AI subscriptions. Three workflows replace them:\n\n1. Research: one agent that reads, summarizes, and files\n2. Production: drafts from your own data, your own voice\n3. Distribution: publish, track, resurface winners\n\nEverything else is a demo you pay monthly to not use.",
-  "cta": "Exact setup in replies."
- },
- {
   "date": "2026-08-29",
   "name": "I got robbed in London. Lost a finger in Portugal. Shipped anyway.",
   "topic": "Story",
@@ -1801,98 +1437,6 @@ const PLAN = [
   ],
   "caption": "I got robbed in London. Lost a finger in Portugal. Payment processors froze us mid-launch.\n\nSame twelve months: we shipped Ryder One to 68 countries, closed the seed, and won a Red Dot.\n\nThe bad year and the best year were the same year. Nobody tells you they usually are.",
   "cta": "Personal replies to every story shared back."
- },
- {
-  "date": "2026-08-30",
-  "name": "gm. drop the boring win nobody claps for.",
-  "topic": "Community",
-  "mission": "Replies",
-  "format": "Question post",
-  "intensity": "Low",
-  "niche": "GM / Community",
-  "hookType": "Question",
-  "framework": "Audience Callout",
-  "why": "Reply-day; celebrates the audience instead of the author. Slot: Sunday community day (author-engaged replies weigh 75).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "gm. drop the boring win nobody claps for.",
-    "o": "Question post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Boring wins thread: the unglamorous thing that actually moved your company.",
-    "o": "Question post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Shipped nothing viral this week? Perfect. What quietly worked?",
-    "o": "Question post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: gm. drop the boring win nobody claps for. BUILD: body per draft below. PAYOFF: Yours? REPLY PLAN: This is the 75x day: the post is the prompt, the replies are the content. Respond to everything for the first 2 hours. Quote the best answer next day.",
-  "shots": [
-   "One question, one line",
-   "Make it answerable in 10 seconds",
-   "Zero setup, zero links",
-   "Your first reply sets the tone"
-  ],
-  "overlay": [
-   "boring wins only",
-   "no launches allowed",
-   "clap for maintenance"
-  ],
-  "caption": "gm. drop the boring win nobody claps for.\n\nMine: we cut fulfillment errors to near zero and not one person will ever tweet about it.\n\nYours?",
-  "cta": "Celebrate every reply; this thread is the community."
- },
- {
-  "date": "2026-08-31",
-  "name": "Streaks are for Duolingo. Formats are for growth.",
-  "topic": "Builder",
-  "mission": "Replies",
-  "format": "Short post",
-  "intensity": "High",
-  "niche": "Builder Takes",
-  "hookType": "Contrarian/Hard Truth",
-  "framework": "Pattern Interrupt",
-  "why": "Data-backed contrarian; sets up the dashboard reveal. Slot: Monday builder take (reply weight 13.5).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Streaks are for Duolingo. Formats are for growth.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Your posting streak is a vanity metric. Your format hit-rate isn't.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Stop counting days. Start counting repeatable winners.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Streaks are for Duolingo. Formats are for growth. BUILD: body per draft below. PAYOFF: Find your 10x format. Post it three times a week. Let the streak die. REPLY PLAN: Post the take, then reply to your own post with the strongest counterargument to seed the debate. Respond to the first 10 replies within the hour (author-engaged replies weigh 75).",
-  "shots": [
-   "Line 1: the take, no context",
-   "Line 2-3: one proof from building Ryder",
-   "Last line: the rule, quotable",
-   "No link, no hashtag"
-  ],
-  "overlay": [
-   "streaks vs formats",
-   "find the repeatable winner",
-   "my 10x format"
-  ],
-  "caption": "Streaks are for Duolingo. Formats are for growth.\n\nMy longform notes outperform my median post 10x. That one sentence is worth more than every streak I've kept.\n\nFind your 10x format. Post it three times a week. Let the streak die.",
-  "cta": "Pin: 'what's your 10x format?'"
  },
  {
   "date": "2026-09-01",
@@ -1941,52 +1485,6 @@ const PLAN = [
   "cta": "'What stage were you at the no?' pinned."
  },
  {
-  "date": "2026-09-02",
-  "name": "We're building a bank on top of a wallet. On purpose.",
-  "topic": "Ryder",
-  "mission": "Convert",
-  "format": "Short post + media",
-  "intensity": "Medium",
-  "niche": "Crypto / Ryder",
-  "hookType": "Announcement/Proof",
-  "framework": "Demo / Unboxing",
-  "why": "Vision post; profile-click driver ahead of fundraising conversations. Slot: Wednesday Ryder proof (profile clicks weigh 12).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "We're building a bank on top of a wallet. On purpose.",
-    "o": "Short post + media",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "The roadmap nobody asked for: wallet first, bank second.",
-    "o": "Short post + media",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Why the wallet was never the endgame.",
-    "o": "Short post + media",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: We're building a bank on top of a wallet. On purpose. BUILD: body per draft below. PAYOFF: Wallet first. Bank second. The order is the strategy. REPLY PLAN: Reply to the post with the product link (links in the first post cost reach). Answer every product question same-day.",
-  "shots": [
-   "Proof first: award, country count, or demo clip",
-   "One sentence of what it means for a normal person",
-   "Media attached: photo or 30s clip",
-   "Product link goes in the first reply"
-  ],
-  "overlay": [
-   "wallet → bank",
-   "the roadmap logic",
-   "what ships next"
-  ],
-  "caption": "We're building a bank on top of a wallet. On purpose.\n\nThe wallet earns the right: custody is trust, and trust is the only real moat in finance. Everything after — swaps, staking, on-ramps, payments — sits on that.\n\nWallet first. Bank second. The order is the strategy.",
-  "cta": "Roadmap questions answered in replies."
- },
- {
   "date": "2026-09-03",
   "name": "If I ran Ryder again from zero, here's what actually changes.",
   "topic": "Note",
@@ -2031,190 +1529,6 @@ const PLAN = [
   ],
   "caption": "If I ran Ryder again from zero:\n\n1. Build the audience 12 months before the product\n2. Hire one person who's shipped hardware, immediately\n3. Raise at strength, announce at open\n4. Say no to the uncapped note in a down market\n5. Document everything publicly from day one\n\nThe product would be the same. The order would not.",
   "cta": "Note tweet; expand items in replies on request."
- },
- {
-  "date": "2026-09-04",
-  "name": "My AI reads my competitors' feeds weekly. I read a one-page digest.",
-  "topic": "AI",
-  "mission": "Authority",
-  "format": "Short post",
-  "intensity": "Medium",
-  "niche": "AI / Tech",
-  "hookType": "Take/Education",
-  "framework": "Conditional Hack + Numbered Listicle",
-  "why": "Practical agent use-case; consistent bookmark performer. Slot: Friday AI/tech (bookmark pillar).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "My AI reads my competitors' feeds weekly. I read a one-page digest.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Competitor stalking is automated now. The digest is better than the doomscroll.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "I stopped watching competitors. The agent watches. I build.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: My AI reads my competitors' feeds every week. I read a one-page digest. BUILD: body per draft below. PAYOFF: Setup in the replies. REPLY PLAN: Reply with the exact stack/steps as a follow-up post. Answer implementation questions; each answered thread is a 75-weight event.",
-  "shots": [
-   "Claim with a number in line 1",
-   "2-4 concrete items, no fluff",
-   "Offer depth in the replies, not a link",
-   "Screenshot beats description"
-  ],
-  "overlay": [
-   "the weekly digest",
-   "what it flags",
-   "setup in replies"
-  ],
-  "caption": "My AI reads my competitors' feeds every week. I read a one-page digest.\n\nIt flags: pricing changes, launches, positioning shifts, and outlier posts. I stopped doomscrolling rivals and got four hours a week back.\n\nSetup in the replies.",
-  "cta": "Setup steps in reply thread."
- },
- {
-  "date": "2026-09-05",
-  "name": "Three visas, three countries, one rule: never unpack fully.",
-  "topic": "Story",
-  "mission": "Reach",
-  "format": "Greentext / story post",
-  "intensity": "Medium",
-  "niche": "Founder Story",
-  "hookType": "Personal Story",
-  "framework": "Greentext Timeline + Vulnerable Origin",
-  "why": "Identity + origin content; the account's reply-rate leader category. Slot: Saturday story (reply engine: 37-64 replies on this category).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Three visas, three countries, one rule: never unpack fully.",
-    "o": "Greentext / story post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "The immigrant founder packing rule, and what it taught me about commitment.",
-    "o": "Greentext / story post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Never fully unpacked, never fully stopped.",
-    "o": "Greentext / story post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Three visas. Three countries. One rule: never unpack fully. BUILD: body per draft below. PAYOFF: Eleven years out of Bulacan and the box I've never unpacked is the one with the return ticket. REPLY PLAN: Personal stories are the account's reply engine (37-64 replies vs median 2). Reply to every personal response personally; no copy-paste.",
-  "shots": [
-   "Greentext or bare timeline, one beat per line",
-   "The turn: where it flips",
-   "Land on today, one line",
-   "Photo if it exists, nothing staged"
-  ],
-  "overlay": [
-   "three countries",
-   "the packing rule",
-   "home is the work"
-  ],
-  "caption": "Three visas. Three countries. One rule: never unpack fully.\n\nAmsterdam taught me systems. Japan taught me craft. LA taught me story. The suitcase in the corner taught me the most: commitment isn't location, it's direction.\n\nEleven years out of Bulacan and the box I've never unpacked is the one with the return ticket.",
-  "cta": "Reply to every immigrant-builder story."
- },
- {
-  "date": "2026-09-06",
-  "name": "Which do you actually want: freedom, money, or proof you could?",
-  "topic": "Community",
-  "mission": "Replies",
-  "format": "Question post",
-  "intensity": "Low",
-  "niche": "GM / Community",
-  "hookType": "Question",
-  "framework": "Audience Callout",
-  "why": "Identity question; high reply rate, zero production. Slot: Sunday community day (author-engaged replies weigh 75).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Which do you actually want: freedom, money, or proof you could?",
-    "o": "Question post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Founders run on one of three fuels. Which is yours, honestly?",
-    "o": "Question post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "Freedom, money, or proof. Pick your real one.",
-    "o": "Question post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Founders: which do you actually want? BUILD: body per draft below. PAYOFF: Honest answers only. Mine changed somewhere between the $5K grant and the term sheet. Yours? REPLY PLAN: This is the 75x day: the post is the prompt, the replies are the content. Respond to everything for the first 2 hours. Quote the best answer next day.",
-  "shots": [
-   "One question, one line",
-   "Make it answerable in 10 seconds",
-   "Zero setup, zero links",
-   "Your first reply sets the tone"
-  ],
-  "overlay": [
-   "three fuels",
-   "pick honestly",
-   "mine changed over time"
-  ],
-  "caption": "Founders: which do you actually want?\n\n• freedom\n• money\n• proof you could\n\nHonest answers only. Mine changed somewhere between the $5K grant and the term sheet. Yours?",
-  "cta": "Engage every answer; share which his is mid-thread."
- },
- {
-  "date": "2026-09-07",
-  "name": "Your best content idea is the one you're embarrassed to post.",
-  "topic": "Builder",
-  "mission": "Replies",
-  "format": "Short post",
-  "intensity": "High",
-  "niche": "Builder Takes",
-  "hookType": "Contrarian/Hard Truth",
-  "framework": "Pattern Interrupt",
-  "why": "Meta-content take backed by his own greentext numbers. Slot: Monday builder take (reply weight 13.5).",
-  "hooks": [
-   {
-    "t": "Primary",
-    "s": "Your best content idea is the one you're embarrassed to post.",
-    "o": "Short post",
-    "v": "none unless noted in structure"
-   },
-   {
-    "t": "Alt A",
-    "s": "Embarrassment is the metric. The cringe post is the winner.",
-    "o": "Short post",
-    "v": "same"
-   },
-   {
-    "t": "Alt B",
-    "s": "The post you're scared of is the one that works.",
-    "o": "Short post",
-    "v": "same"
-   }
-  ],
-  "script": "HOOK: Your best content idea is the one you're embarrassed to post. BUILD: body per draft below. PAYOFF: The embarrassment isn't a warning. It's a signal you're about to say something true. REPLY PLAN: Post the take, then reply to your own post with the strongest counterargument to seed the debate. Respond to the first 10 replies within the hour (author-engaged replies weigh 75).",
-  "shots": [
-   "Line 1: the take, no context",
-   "Line 2-3: one proof from building Ryder",
-   "Last line: the rule, quotable",
-   "No link, no hashtag"
-  ],
-  "overlay": [
-   "embarrassment = signal",
-   "my proof post",
-   "post it anyway"
-  ],
-  "caption": "Your best content idea is the one you're embarrassed to post.\n\nMy proof: the greentext about my mom leaving. Sat in drafts for weeks. Posted it flinching. It's my most-replied content category ever.\n\nThe embarrassment isn't a warning. It's a signal you're about to say something true.",
-  "cta": "Pin: 'what's sitting in your drafts?'"
  },
  {
   "date": "2026-09-08",
