@@ -45,7 +45,7 @@ document.getElementById('sidemeta').innerHTML =
   '<div class="row"><span>posts</span><b>'+DATA.length+'</b></div>'+
   '<div class="row"><span>niches</span><b>'+Object.keys(byNiche).length+'</b></div>'+
   '<div class="row"><span>views</span><b>'+fmt(totals.v)+'</b></div>'+
-  '<div class="row"><span>posts thru</span><b>2026-07-21</b></div>'+'<div class="row"><span>metrics thru</span><b>2026-05-21</b></div>';
+  '<div class="row"><span>posts thru</span><b>2026-07-21</b></div>'+'<div class="row"><span>metrics thru</span><b>2026-07-21</b></div>';
 
 /* ---------- bars ---------- */
 function bars(el, rows, colorFn, valFmt){
