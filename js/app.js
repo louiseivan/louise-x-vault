@@ -32,13 +32,23 @@ Object.values(byHook).forEach(a=>{a.avg=Math.round(a.v/a.n); a.saveRate=a.s/Math
 const totals = METRIC.reduce((t,d)=>({v:t.v+d.views,s:t.s+d.saves,sh:t.sh+d.shares,l:t.l+d.likes,c:t.c+d.comments}),{v:0,s:0,sh:0,l:0,c:0});
 
 /* ---------- stat cards + sidebar ---------- */
+const profClicks = METRIC.reduce((a,d)=>a+(d.fol||0),0);
+const engTotal = totals.l+totals.c+totals.sh+totals.s+profClicks;
+const noteCount = DATA.filter(d=>d.type==='NOTE').length;
+const threadCount = DATA.filter(d=>d.type==='THREAD').length;
 document.getElementById('statcards').innerHTML = [
   ['Posts analyzed', DATA.length, 'full year via Typefully'],
+  ['With metrics', METRIC.length, 'X analytics joins'],
   ['Total impressions', fmt(totals.v), 'metrics window'],
+  ['Likes', fmt(totals.l), 'weight 0.5 in the ranker'],
+  ['Replies earned', fmt(totals.c), 'weight 13.5 in the ranker'],
+  ['Reposts + quotes', fmt(totals.sh), 'weight 1.0 · distribution'],
   ['Bookmarks', fmt(totals.s), 'authority signal'],
-  ['Reposts + quotes', fmt(totals.sh), 'distribution signal'],
-  ['Followers', '8,694', 'at export time'],
-  ['Replies earned', fmt(totals.c), 'weight 13.5 in the ranker']
+  ['Profile clicks', fmt(profClicks), 'weight 12 in the ranker'],
+  ['Engagement rate', (engTotal/Math.max(totals.v,1)*100).toFixed(1)+'%', 'engagements / impressions'],
+  ['Note tweets', noteCount, 'longform, the 10x format'],
+  ['Threads', threadCount, 'multi-post drops'],
+  ['Followers', '8,694', 'at export time']
 ].map(([k,v,d])=>`<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
 
 document.getElementById('sidemeta').innerHTML =
@@ -208,411 +218,204 @@ bars('hsaves', ranked(byHook,'saveRate'), ()=> '#4ade80', v=>v.toFixed(1));
 document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
   .map(([k,c])=>`<span><span class="dot" style="background:${c}"></span>${k}</span>`).join('');
 
-/* ---------- graph view (obsidian intelligence engine) ----------
-   A continuous, real-time Instagram command center. Content formats
-   and engagement signals stream in from the left, fuse inside a dense
-   processing core, and fan out into niche performance clusters on the
-   right. Luminous particles flow forever — new ones always entering,
-   old ones fading — with stream brightness, speed and cluster size
-   driven by the real numbers. The small nodes orbiting each cluster
-   are that niche's top posts. No timeline, no reset — always alive. */
+/* ---------- graph view: obsidian-style force graph ---------- */
 (function(){
   const canvas = document.getElementById('graph');
+  if(!canvas) return;
   const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('graphwrap');
   const tip = document.getElementById('gtip');
-  const statusChip = document.getElementById('gstatus');
   const stateEl = document.getElementById('gstate');
   const eventsEl = document.getElementById('gevents');
-  const chipsEl = document.getElementById('gchips');
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if(stateEl) stateEl.textContent = 'obsidian graph · louiseivan / x';
+  if(eventsEl) eventsEl.textContent = DATA.length + ' posts · ' + Object.keys(NICHE_COLORS).length + ' niches';
+  const chips = document.getElementById('gchips');
+  if(chips) chips.innerHTML = '';
+  const legend = document.getElementById('legend');
+  if(legend) legend.innerHTML = Object.entries(NICHE_COLORS).map(([n,c])=>
+    `<span class="litem"><span class="ldot" style="background:${c}"></span>${n}</span>`).join('');
 
-  /* ---- real Instagram aggregates ---- */
-  const T = DATA.reduce((t,d)=>({views:t.views+d.views, reach:t.reach+(d.reach||0), likes:t.likes+d.likes,
-    comments:t.comments+d.comments, shares:t.shares+d.shares, saves:t.saves+d.saves, watch:t.watch+(d.watch||0)}),
-    {views:0, reach:0, likes:0, comments:0, shares:0, saves:0, watch:0});
-  const engRate = (T.likes+T.comments+T.saves+T.shares)/Math.max(T.views,1)*100;
-  const typeAgg = {Reels:{n:0,v:0}, Carousels:{n:0,v:0}, 'Static posts':{n:0,v:0}};
-  DATA.forEach(d=>{
-    const k = d.type==='REELS' ? 'Reels' : /CAROUSEL/.test(d.type||'') ? 'Carousels' : 'Static posts';
-    typeAgg[k].n++; typeAgg[k].v += d.views;
+  /* build nodes: account hub -> niche hubs -> every post */
+  const nodes = [], links = [];
+  const center = {label:'@louiseivan', r:22, color:'#e8e8ec', x:0, y:0, vx:0, vy:0, kind:'center'};
+  nodes.push(center);
+  const hubs = {};
+  const nicheNames = Object.keys(NICHE_COLORS);
+  nicheNames.forEach((name,i)=>{
+    const a = i/nicheNames.length*Math.PI*2;
+    const n = {label:name, r:13, color:NICHE_COLORS[name], x:Math.cos(a)*260, y:Math.sin(a)*260, vx:0, vy:0, kind:'niche'};
+    hubs[name]=n; nodes.push(n); links.push({s:center, t:n, len:260, k:0.012});
   });
-  const maxPostViews = Math.max(...DATA.map(d=>d.views), 1);
-  const nicheAgg = Object.entries(byNiche).map(([name,a])=>({name, n:a.n, v:a.v, avg:a.avg, saveRate:a.saveRate}))
-    .sort((a,b)=> b.v-a.v);
-  const maxNicheV = nicheAgg[0].v;
-  const topOf = {};
-  nicheAgg.forEach(nk=>{ topOf[nk.name] = DATA.filter(d=>d.niche===nk.name).sort((a,b)=>b.views-a.views).slice(0,3); });
+  DATA.forEach(d=>{
+    const hub = hubs[d.niche]; if(!hub) return;
+    const r = d.ok ? Math.max(2.4, Math.min(12, Math.sqrt(d.views)/12)) : 2.2;
+    const a = Math.random()*Math.PI*2, dist = 55 + Math.random()*70;
+    const n = {label:(d.cap||'(no text)').slice(0,70), r, color:NICHE_COLORS[d.niche],
+      x:hub.x+Math.cos(a)*dist, y:hub.y+Math.sin(a)*dist, vx:0, vy:0, kind:'post', d, hub};
+    nodes.push(n); links.push({s:hub, t:n, len:55+r*7, k:0.02});
+  });
+  const neighbors = new Map();
+  nodes.forEach(n=>neighbors.set(n, new Set([n])));
+  links.forEach(l=>{ neighbors.get(l.s).add(l.t); neighbors.get(l.t).add(l.s); });
 
-  /* ---- HUD: pinned live status + real lifetime totals ---- */
-  stateEl.textContent = 'live · instagram intelligence';
-  statusChip.classList.add('live');
-  const CHIPS = [
-    {label:'views',    color:'#38bdf8', val:fmt(T.views)},
-    {label:'reach',    color:'#22d3ee', val:fmt(T.reach)},
-    {label:'likes',    color:'#f472b6', val:fmt(T.likes)},
-    {label:'comments', color:'#a78bfa', val:fmt(T.comments)},
-    {label:'shares',   color:'#fbbf24', val:fmt(T.shares)},
-    {label:'saves',    color:'#34d399', val:fmt(T.saves)},
-    {label:'eng rate', color:'#c084fc', val:engRate.toFixed(1)+'%'}
-  ];
-  chipsEl.innerHTML = CHIPS.map(m=>
-    `<span class="gchip"><span class="gdot" style="background:${m.color};color:${m.color}"></span><span class="glab">${m.label}</span><b>${m.val}</b></span>`).join('');
-  const gnote = document.querySelector('#graph-view .gnote');
-  if(gnote) gnote.textContent = 'Live engine over '+DATA.length+' Instagram posts across '+nicheAgg.length+' niches. Stream brightness and speed follow real totals, cluster size follows views, and the orbiting nodes are the top posts of each niche. Hover anything for numbers, click an orbit node to open the post.';
+  /* view transform + interaction state */
+  let scale = 0.85, ox = 0, oy = 0, W = 0, H = 0, dpr = 1;
+  let hover = null, dragNode = null, panning = false, px = 0, py = 0;
+  let alpha = 1;
 
-  /* helpers */
-  const lerp = (a,b,t)=> a+(b-a)*t;
-  const clamp01 = t => Math.max(0, Math.min(1, t));
-  function hexA(hex, a){
-    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-    return `rgba(${r},${g},${b},${a})`;
-  }
-  const bz = (P,t)=>{ const u=1-t, a=u*u*u, b=3*u*u*t, c=3*u*t*t, e=t*t*t;
-    return {x:a*P.p0.x+b*P.c1.x+c*P.c2.x+e*P.p3.x, y:a*P.p0.y+b*P.c1.y+c*P.c2.y+e*P.p3.y}; };
-  const sigW = raw => Math.max(0.12, Math.pow(raw/Math.max(T.views,1), 0.35));
-
-  /* ---- scene state ---- */
-  let W, H, sources = [], clusters = [], headers = [], core = null, stars = [];
-  let clock = 0, lastT = null, events = T.likes+T.comments+T.saves+T.shares, hoverItem = null;
-  let cam = {x:0, y:0, z:1}, dragging = false, dragStart = null;
-  const inbound = [], outbound = [], pulses = [], flashes = [];
-  let inAcc = 0, outAcc = 0, pulseAcc = 0;
-
-  function layout(){
-    W = canvas.clientWidth; H = canvas.clientHeight;
+  function resize(){
+    dpr = window.devicePixelRatio || 1;
+    W = wrap.clientWidth; H = Math.max(wrap.clientHeight, 460);
     canvas.width = W*dpr; canvas.height = H*dpr;
-    const mob = W < 640;
-    core = {x:W*0.46, y:H*0.55, r: mob?16:24};
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  }
+  resize(); addEventListener('resize', ()=>{resize(); draw();});
 
-    /* left: content formats + engagement signals (real weights) */
-    const fmtRows = [
-      {label:'Reels', color:'#4cc2ff', w:clamp01(typeAgg.Reels.v/T.views)+0.15, info:typeAgg.Reels.n+' posts · '+fmt(typeAgg.Reels.v)+' views'},
-      {label:'Carousels', color:'#818cf8', w:typeAgg.Carousels.n ? clamp01(typeAgg.Carousels.v/T.views)+0.15 : 0.10, info:typeAgg.Carousels.n ? typeAgg.Carousels.n+' posts · '+fmt(typeAgg.Carousels.v)+' views' : 'no carousels in this pull · ambient stream'},
-      {label:'Static posts', color:'#60a5fa', w:clamp01(typeAgg['Static posts'].v/T.views)+0.12, info:typeAgg['Static posts'].n+' posts · '+fmt(typeAgg['Static posts'].v)+' views'},
-      {label:'Stories', color:'#38bdf8', w:0.10, info:'not exposed by the Instagram API · ambient stream'}
-    ];
-    const sigRows = [
-      {label:'Views', color:'#38bdf8', w:1, info:fmt(T.views)+' lifetime views'},
-      {label:'Reach', color:'#22d3ee', w:sigW(T.reach), info:fmt(T.reach)+' accounts reached'},
-      {label:'Impressions', color:'#7dd3fc', w:sigW(T.reach)*0.8, info:'estimated from reach · not in this API pull'},
-      {label:'Likes', color:'#f472b6', w:sigW(T.likes), info:fmt(T.likes)+' lifetime likes'},
-      {label:'Comments', color:'#a78bfa', w:sigW(T.comments), info:fmt(T.comments)+' lifetime comments'},
-      {label:'Shares', color:'#fbbf24', w:sigW(T.shares), info:fmt(T.shares)+' lifetime shares'},
-      {label:'Saves', color:'#34d399', w:sigW(T.saves), info:fmt(T.saves)+' lifetime saves'},
-      {label:'Profile clicks', color:'#c084fc', w:0.3, info:fmt(DATA.reduce((a,d)=>a+(d.fol||0),0))+' profile clicks (weight 12)'},
-      {label:'Profile visits', color:'#93c5fd', w:0.08, info:'not exposed per post · ambient stream'},
-      {label:'Followers +', color:'#f9a8d4', w:0.08, info:'per-post follows only reported on feed posts'}
-    ];
-    const rows = [{header:'formats'}, ...fmtRows, {header:'signals'}, ...sigRows];
-    const lx = mob?16:26, top0 = mob?86:96, bot = H-22;
-    const gap = (bot-top0)/(rows.length-1);
-    sources = []; headers = [];
-    rows.forEach((r,i)=>{
-      const y = top0 + i*gap;
-      if(r.header){ headers.push({label:r.header, x:lx-4, y}); return; }
-      const ang = Math.PI + ((y<core.y?-1:1)*Math.min(Math.abs(y-core.y)/H,1))*0.5;
-      const p3 = {x:core.x+Math.cos(ang)*(core.r+2), y:core.y+Math.sin(ang)*(core.r+2)};
-      sources.push({kind:'source', label:r.label, color:r.color, w:r.w, info:r.info, x:lx, y, r:3.2+r.w*2.6,
-        P:{p0:{x:lx, y}, c1:{x:lerp(lx,core.x,0.42), y}, c2:{x:lerp(lx,core.x,0.78), y:lerp(y,p3.y,0.8)}, p3}});
-    });
-
-    /* right: niche performance clusters */
-    const cx = W-(mob?84:150);
-    const ctop = mob?106:118, cbot = H-30;
-    headers.push({label:'niche performance', x:cx-24, y:ctop-22});
-    const cgap = (cbot-ctop)/(nicheAgg.length-1);
-    clusters = nicheAgg.map((nk,i)=>{
-      const y = ctop + i*cgap;
-      const w = nk.v/maxNicheV;
-      const r = (mob?5:7) + Math.sqrt(w)*(mob?9:15);
-      const p0ang = Math.atan2(y-core.y, cx-core.x);
-      const p0 = {x:core.x+Math.cos(p0ang)*(core.r+2), y:core.y+Math.sin(p0ang)*(core.r+2)};
-      return {kind:'cluster', name:nk.name, color:nc(nk.name), w, agg:nk, x:cx, y, r, rank:i, hit:0,
-        top:topOf[nk.name], insightPos:[],
-        P:{p0, c1:{x:lerp(core.x,cx,0.35), y:lerp(core.y,y,0.2)}, c2:{x:lerp(core.x,cx,0.72), y}, p3:{x:cx-r-3, y}}};
-    });
-
-    /* parallax starfield */
-    stars = [];
-    const nStars = mob?26:56;
-    for(let i=0;i<nStars;i++){
-      stars.push({x:Math.random()*W, y:Math.random()*H, z:0.3+Math.random()*0.7,
-        r:0.4+Math.random()*1.1, c:['#38bdf8','#a78bfa','#f472b6','#e2e8f0'][(Math.random()*4)|0]});
+  function tick(){
+    /* pairwise repulsion (n^2 is fine at ~430 nodes) */
+    for(let i=0;i<nodes.length;i++){
+      const a = nodes[i];
+      for(let j=i+1;j<nodes.length;j++){
+        const b = nodes[j];
+        let dx = a.x-b.x, dy = a.y-b.y;
+        let d2 = dx*dx+dy*dy || 0.01;
+        if(d2 > 90000) continue;
+        const f = (a.kind==='post'&&b.kind==='post' ? 120 : 900)/d2;
+        const dl = Math.sqrt(d2);
+        dx/=dl; dy/=dl;
+        a.vx += dx*f; a.vy += dy*f;
+        b.vx -= dx*f; b.vy -= dy*f;
+      }
     }
-    inbound.length = 0; outbound.length = 0; pulses.length = 0; flashes.length = 0;
+    /* springs */
+    links.forEach(l=>{
+      let dx = l.t.x-l.s.x, dy = l.t.y-l.s.y;
+      const dl = Math.sqrt(dx*dx+dy*dy)||0.01;
+      const f = (dl-l.len)*l.k;
+      dx/=dl; dy/=dl;
+      l.s.vx += dx*f; l.s.vy += dy*f;
+      l.t.vx -= dx*f; l.t.vy -= dy*f;
+    });
+    /* gentle centering + integrate */
+    nodes.forEach(n=>{
+      n.vx -= n.x*0.0012; n.vy -= n.y*0.0012;
+      if(n===dragNode) { n.vx=0; n.vy=0; return; }
+      n.vx *= 0.88; n.vy *= 0.88;
+      n.x += n.vx*alpha; n.y += n.vy*alpha;
+    });
   }
 
-  /* ---- continuous particle engine: in from sources, out to clusters ---- */
-  function spawn(dt){
-    const cap = W<640 ? 90 : 170;
-    inAcc += dt;
-    while(inAcc > 90){
-      inAcc -= 90;
-      if(inbound.length + outbound.length < cap){
-        let tw = 0; sources.forEach(s=> tw += s.w);
-        let pw = Math.random()*tw;
-        const s = sources.find(x=> (pw -= x.w) <= 0) || sources[0];
-        inbound.push({P:s.P, t:0, sp:0.00010+0.00016*s.w+Math.random()*0.00005, r:0.7+Math.random()*1.1, c:s.color});
-      }
-    }
-    outAcc += dt;
-    while(outAcc > 95){
-      outAcc -= 95;
-      if(inbound.length + outbound.length < cap){
-        let tw = 0; clusters.forEach(c=> tw += 0.25+c.w);
-        let pw = Math.random()*tw;
-        const c = clusters.find(x=> (pw -= 0.25+x.w) <= 0) || clusters[0];
-        outbound.push({P:c.P, t:0, sp:0.00011+0.00020*c.w+Math.random()*0.00005, r:0.7+Math.random()*1.2, c:c.color, cl:c});
-      }
-    }
-    pulseAcc += dt;
-    while(pulseAcc > 620){
-      pulseAcc -= 620;
-      if(pulses.length < 14){
-        const all = Math.random()<0.5 ? sources : clusters;
-        const it = all[(Math.random()*all.length)|0];
-        pulses.push({P:it.P, t:0, sp:0.00042+0.0003*it.w, c:it.color});
-      }
-    }
-    inbound.forEach(q=> q.t += q.sp*dt);
-    outbound.forEach(q=> q.t += q.sp*dt);
-    pulses.forEach(q=> q.t += q.sp*dt);
-    for(let i=inbound.length-1;i>=0;i--) if(inbound[i].t>=1){
-      if(flashes.length<10) flashes.push({t:0, dur:520});
-      inbound.splice(i,1);
-    }
-    for(let i=outbound.length-1;i>=0;i--) if(outbound[i].t>=1){
-      outbound[i].cl.hit = clock; events++;
-      outbound.splice(i,1);
-    }
-    for(let i=pulses.length-1;i>=0;i--) if(pulses[i].t>=1) pulses.splice(i,1);
-    for(let i=flashes.length-1;i>=0;i--){ flashes[i].t += dt; if(flashes[i].t>flashes[i].dur) flashes.splice(i,1); }
-  }
-
-  /* render */
   function draw(){
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,W,H);
-
-    /* obsidian glass backdrop */
-    const bg = ctx.createLinearGradient(0,0,0,H);
-    bg.addColorStop(0,'#06080f'); bg.addColorStop(0.5,'#0a0e1a'); bg.addColorStop(1,'#05070d');
-    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
-    const g1 = ctx.createRadialGradient(W*0.18,H*0.12,10,W*0.18,H*0.12,W*0.5);
-    g1.addColorStop(0,'rgba(139,92,246,0.055)'); g1.addColorStop(1,'rgba(139,92,246,0)');
-    ctx.fillStyle = g1; ctx.fillRect(0,0,W,H);
-    const g2 = ctx.createRadialGradient(W*0.85,H*0.9,10,W*0.85,H*0.9,W*0.5);
-    g2.addColorStop(0,'rgba(34,211,238,0.05)'); g2.addColorStop(1,'rgba(34,211,238,0)');
-    ctx.fillStyle = g2; ctx.fillRect(0,0,W,H);
-    const sheen = ctx.createLinearGradient(0,0,W,H*0.9);
-    sheen.addColorStop(0.32,'rgba(255,255,255,0)');
-    sheen.addColorStop(0.5,'rgba(255,255,255,0.016)');
-    sheen.addColorStop(0.68,'rgba(255,255,255,0)');
-    ctx.fillStyle = sheen; ctx.fillRect(0,0,W,H);
-
-    const driftX = REDUCE ? 0 : Math.sin(clock/9500)*5;
-    const driftY = REDUCE ? 0 : Math.cos(clock/12500)*4;
-
-    /* parallax starfield (screen space, slower drift = depth) */
-    ctx.globalCompositeOperation = 'lighter';
-    stars.forEach(s=>{
-      const tw = REDUCE ? 0.5 : 0.35+0.3*Math.sin(clock/1400*s.z + s.x);
-      ctx.fillStyle = hexA(s.c, 0.10+0.14*tw);
-      ctx.beginPath(); ctx.arc(s.x+driftX*s.z*0.5, s.y+driftY*s.z*0.5, s.r, 0, 7); ctx.fill();
-    });
-    ctx.globalCompositeOperation = 'source-over';
-
-    /* camera + minimal drift */
     ctx.save();
-    ctx.translate(cam.x+driftX, cam.y+driftY); ctx.scale(cam.z, cam.z);
-
-    /* streams: thin glowing curves, brightness follows performance */
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.lineCap = 'round';
-    const strokeP = P=>{ ctx.beginPath(); ctx.moveTo(P.p0.x,P.p0.y); ctx.bezierCurveTo(P.c1.x,P.c1.y,P.c2.x,P.c2.y,P.p3.x,P.p3.y); ctx.stroke(); };
-    sources.forEach(s=>{
-      const hot = hoverItem===s;
-      ctx.strokeStyle = hexA(s.color, hot ? 0.4 : 0.05+0.15*s.w);
-      ctx.lineWidth = hot ? 1.6 : 0.7+0.9*s.w;
-      strokeP(s.P);
+    ctx.translate(W/2+ox, H/2+oy); ctx.scale(scale,scale);
+    const focus = hover ? neighbors.get(hover) : null;
+    /* links */
+    links.forEach(l=>{
+      const lit = focus && (focus.has(l.s) && focus.has(l.t)) && (l.s===hover||l.t===hover);
+      ctx.strokeStyle = lit ? 'rgba(167,139,250,0.55)' : (focus ? 'rgba(140,140,152,0.05)' : 'rgba(140,140,152,0.14)');
+      ctx.lineWidth = (lit?1.4:0.7)/scale;
+      ctx.beginPath(); ctx.moveTo(l.s.x,l.s.y); ctx.lineTo(l.t.x,l.t.y); ctx.stroke();
     });
-    clusters.forEach(c=>{
-      const hot = hoverItem===c;
-      ctx.strokeStyle = hexA(c.color, hot ? 0.45 : 0.06+0.20*c.w);
-      ctx.lineWidth = hot ? 1.8 : 0.8+1.1*c.w;
-      strokeP(c.P);
+    /* nodes */
+    nodes.forEach(n=>{
+      const dim = focus && !focus.has(n);
+      ctx.globalAlpha = dim ? 0.12 : 1;
+      if(!dim && (n.kind!=='post' || n===hover)){
+        ctx.shadowColor = n.color; ctx.shadowBlur = n.kind==='post'?10:18;
+      }
+      ctx.fillStyle = n.color;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
     });
-
-    /* pulses gliding along the streams */
-    pulses.forEach(q=>{
-      const a = bz(q.P, Math.max(q.t-0.055, 0)), b = bz(q.P, q.t);
-      ctx.strokeStyle = hexA(q.c, 0.5*(1-Math.abs(q.t-0.5)*0.8));
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    });
-
-    /* traveling particles */
-    const drawDot = q=>{
-      const pos = bz(q.P, q.t);
-      const a = q.t<0.12 ? q.t/0.12 : q.t>0.88 ? (1-q.t)/0.12 : 1;
-      ctx.fillStyle = hexA(q.c, 0.7*Math.max(a,0));
-      ctx.beginPath(); ctx.arc(pos.x, pos.y, q.r, 0, 7); ctx.fill();
-    };
-    inbound.forEach(drawDot);
-    outbound.forEach(drawDot);
-
-    /* processing core */
-    const pk = REDUCE ? 1 : 1+Math.sin(clock/620)*0.07;
-    const cg = ctx.createRadialGradient(core.x,core.y,1,core.x,core.y,core.r*2.6);
-    cg.addColorStop(0,'rgba(190,230,255,0.5)');
-    cg.addColorStop(0.25,'rgba(56,189,248,0.18)');
-    cg.addColorStop(1,'rgba(56,189,248,0)');
-    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(core.x,core.y,core.r*2.6,0,7); ctx.fill();
-    flashes.forEach(f=>{
-      const t = f.t/f.dur;
-      ctx.strokeStyle = 'rgba(160,220,255,'+(0.35*(1-t)).toFixed(3)+')'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.arc(core.x,core.y,core.r*0.8+t*core.r*1.6,0,7); ctx.stroke();
-    });
-    const a0 = REDUCE ? 0.6 : clock/1600, a1 = REDUCE ? 2.8 : -clock/2300;
-    ctx.strokeStyle = 'rgba(94,210,255,0.5)'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(core.x,core.y,(core.r+6)*pk,a0,a0+2.1); ctx.stroke();
-    ctx.strokeStyle = 'rgba(167,139,250,0.42)'; ctx.lineWidth = 1.1;
-    ctx.beginPath(); ctx.arc(core.x,core.y,(core.r+12)*pk,a1,a1+1.5); ctx.stroke();
-    ctx.strokeStyle = 'rgba(140,200,255,0.14)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(core.x,core.y,core.r+18,0,7); ctx.stroke();
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(8,12,20,0.92)';
-    ctx.beginPath(); ctx.arc(core.x,core.y,core.r*0.62*pk,0,7); ctx.fill();
-    ctx.strokeStyle = 'rgba(150,220,255,0.8)'; ctx.lineWidth = 1.3; ctx.stroke();
-
-    /* source nodes + labels */
-    sources.forEach(s=>{
-      const hot = hoverItem===s;
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = hexA(s.color, 0.30);
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r+2.5, 0, 7); ctx.fill();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = s.color;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r*(hot?1.3:1), 0, 7); ctx.fill();
-      ctx.fillStyle = hot ? '#e8ecf3' : 'rgba(170,180,198,0.85)';
-      ctx.font = '9.5px "JetBrains Mono",monospace'; ctx.textAlign = 'left';
-      ctx.fillText(s.label.toLowerCase(), s.x+s.r+6, s.y+3);
-      s.rx = s.x; s.ry = s.y;
-    });
-    ctx.fillStyle = 'rgba(122,140,170,0.55)'; ctx.font = '8.5px "JetBrains Mono",monospace'; ctx.textAlign = 'left';
-    headers.forEach(h=> ctx.fillText(h.label.toUpperCase(), h.x, h.y+3));
-
-    /* niche performance clusters + orbiting insight nodes */
-    clusters.forEach(c=>{
-      const hot = hoverItem===c;
-      const pkc = REDUCE ? 1 : (c.rank<2 ? 1+Math.sin(clock/700+c.rank)*0.05 : 1);
-      const hitGlow = c.hit ? Math.max(0, 1-(clock-c.hit)/500) : 0;
-      const r = c.r*pkc;
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = hexA(c.color, 0.10+0.16*c.w + hitGlow*0.18 + (hot?0.15:0));
-      ctx.beginPath(); ctx.arc(c.x, c.y, r+7+c.agg.saveRate/4, 0, 7); ctx.fill();
-      c.insightPos = [];
-      c.top.forEach((d,k)=>{
-        const oa = k*2.1 + (REDUCE ? 0 : clock/(3800+k*1200)) + c.rank;
-        const orx = r+8+k*6, ir = 2+Math.sqrt(d.views/maxPostViews)*4.5;
-        const ix = c.x+Math.cos(oa)*orx, iy = c.y+Math.sin(oa)*orx*0.8;
-        ctx.fillStyle = hexA(c.color, hoverItem && hoverItem.d===d ? 0.95 : 0.55);
-        ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.fill();
-        c.insightPos.push({kind:'insight', d, x:ix, y:iy, r:ir, cl:c});
-      });
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = 'rgba(9,13,21,0.92)';
-      ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 7); ctx.fill();
-      ctx.lineWidth = hot ? 2 : 1.5; ctx.strokeStyle = hexA(c.color, 0.9); ctx.stroke();
-      if(hot){ ctx.lineWidth = 1; ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.arc(c.x, c.y, r+3, 0, 7); ctx.stroke(); }
-      ctx.textAlign = 'left';
-      ctx.fillStyle = hot ? '#e8ecf3' : 'rgba(190,198,212,0.9)';
-      ctx.font = '600 10px Inter,sans-serif';
-      ctx.fillText(c.name.split(' / ')[0], c.x+r+8, c.y+1);
-      ctx.fillStyle = hexA(c.color, 0.85);
-      ctx.font = '8.5px "JetBrains Mono",monospace';
-      ctx.fillText(fmt(c.agg.v)+' views', c.x+r+8, c.y+11);
-      c.rx = c.x; c.ry = c.y;
+    /* labels: center + niches always, posts on hover */
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center';
+    nodes.forEach(n=>{
+      if(n.kind==='post' && n!==hover) return;
+      if(focus && !focus.has(n)) return;
+      ctx.font = (n.kind==='center'?13:n.kind==='niche'?11:10)/scale*Math.min(scale,1.4)+'px Inter, sans-serif';
+      ctx.font = ((n.kind==='center'?13:n.kind==='niche'?11:10)/Math.max(scale,0.75))+'px Inter, sans-serif';
+      ctx.fillStyle = n.kind==='post' ? '#c9c9d1' : '#9a9aa5';
+      ctx.fillText(n.label, n.x, n.y + n.r + 14/scale);
     });
     ctx.restore();
-
-    /* cinematic vignette */
-    const vg = ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.38,W/2,H/2,Math.max(W,H)*0.72);
-    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,3,6,0.42)');
-    ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
   }
 
-  function frame(now){
-    const dt = lastT==null ? 16.7 : Math.min(now-lastT, 50);  /* clamped: seamless after tab switches */
-    lastT = now; clock += dt;
-    spawn(dt);
+  function loop(){
+    if(alpha > 0.02 || dragNode){ tick(); if(!dragNode) alpha *= 0.995; }
     draw();
-    eventsEl.textContent = events.toLocaleString('en-US')+' events';
-    requestAnimationFrame(frame);
+    requestAnimationFrame(loop);
   }
 
-  /* interaction: hover intel, click-to-open, pan, zoom */
-  function toWorld(px,py){
-    const dX = REDUCE ? 0 : Math.sin(clock/9500)*5;
-    const dY = REDUCE ? 0 : Math.cos(clock/12500)*4;
-    return {x:(px-cam.x-dX)/cam.z, y:(py-cam.y-dY)/cam.z};
+  function toWorld(cx, cy){
+    const b = canvas.getBoundingClientRect();
+    return [ (cx-b.left-W/2-ox)/scale, (cy-b.top-H/2-oy)/scale ];
   }
-  function pick(px,py){
-    const pt = toWorld(px,py);
+  function nodeAt(cx, cy){
+    const [x,y] = toWorld(cx,cy);
     let best = null, bd = 1e9;
-    const test = (it,rad)=>{ const dx=it.x-pt.x, dy=it.y-pt.y, dd=dx*dx+dy*dy;
-      if(dd < rad*rad && dd < bd){ bd = dd; best = it; } };
-    clusters.forEach(c=> c.insightPos.forEach(ip=> test(ip, ip.r+4)));
-    sources.forEach(s=> test(s, s.r+5));
-    clusters.forEach(c=> test(c, c.r+4));
+    nodes.forEach(n=>{
+      const dx = n.x-x, dy = n.y-y, dd = dx*dx+dy*dy;
+      const rr = (n.r+5)*(n.r+5);
+      if(dd < rr && dd < bd){ best = n; bd = dd; }
+    });
     return best;
   }
+
   canvas.addEventListener('mousemove', e=>{
-    const rc = canvas.getBoundingClientRect();
-    if(dragging){
-      cam.x += e.clientX-dragStart.x; cam.y += e.clientY-dragStart.y;
-      dragStart = {x:e.clientX, y:e.clientY};
-      if(REDUCE) draw();
+    if(dragNode){
+      const [x,y] = toWorld(e.clientX, e.clientY);
+      dragNode.x = x; dragNode.y = y; alpha = Math.max(alpha, 0.3);
       return;
     }
-    hoverItem = pick(e.clientX-rc.left, e.clientY-rc.top);
-    if(hoverItem){
+    if(panning){ ox += e.clientX-px; oy += e.clientY-py; px = e.clientX; py = e.clientY; return; }
+    const n = nodeAt(e.clientX, e.clientY);
+    hover = n;
+    canvas.style.cursor = n ? 'pointer' : 'grab';
+    if(n && n.kind==='post'){
+      const d = n.d;
       tip.style.display = 'block';
-      tip.style.left = Math.min(e.clientX-rc.left+14, W-272)+'px';
-      tip.style.top = Math.min(e.clientY-rc.top+12, H-84)+'px';
-      if(hoverItem.kind==='insight'){
-        const d = hoverItem.d;
-        tip.innerHTML = '<div class="t">'+esc((d.cap||'(no caption)').slice(0,90))+'</div><div class="m">'+d.ts.slice(0,10)+' · '+fmt(d.views)+' views · '+fmt(d.saves)+' saves · click to open</div>';
-        canvas.style.cursor = 'pointer';
-      } else if(hoverItem.kind==='cluster'){
-        const a = hoverItem.agg;
-        tip.innerHTML = '<div class="t">'+esc(hoverItem.name)+'</div><div class="m">'+a.n+' posts · '+fmt(a.v)+' views · '+fmt(a.avg)+' avg · '+a.saveRate.toFixed(1)+' saves/1K</div>';
-        canvas.style.cursor = 'grab';
-      } else {
-        tip.innerHTML = '<div class="t">'+esc(hoverItem.label)+'</div><div class="m">'+esc(hoverItem.info)+'</div>';
-        canvas.style.cursor = 'grab';
-      }
-    } else { tip.style.display = 'none'; canvas.style.cursor = dragging ? 'grabbing' : 'grab'; }
-    if(REDUCE) draw();
+      const b = canvas.getBoundingClientRect();
+      tip.style.left = (e.clientX-b.left+14)+'px'; tip.style.top = (e.clientY-b.top+10)+'px';
+      tip.innerHTML = '<b>'+esc(n.label)+'</b><br>'+ d.ts.slice(0,10) + ' · ' + d.niche +
+        (d.ok ? '<br>'+fmt(d.views)+' impr · '+d.comments+' replies · '+d.saves+' bookmarks' : '<br>archive post · no metrics');
+    } else if(n){
+      tip.style.display = 'block';
+      const b = canvas.getBoundingClientRect();
+      tip.style.left = (e.clientX-b.left+14)+'px'; tip.style.top = (e.clientY-b.top+10)+'px';
+      const cnt = n.kind==='center' ? DATA.length : DATA.filter(d=>d.niche===n.label).length;
+      tip.innerHTML = '<b>'+esc(n.label)+'</b><br>'+cnt+' posts';
+    } else tip.style.display = 'none';
   });
-  canvas.addEventListener('mouseleave', ()=>{ hoverItem = null; tip.style.display = 'none'; if(REDUCE) draw(); });
-  canvas.addEventListener('mousedown', e=>{ if(!hoverItem || hoverItem.kind!=='insight'){ dragging = true; dragStart = {x:e.clientX, y:e.clientY}; } });
-  addEventListener('mouseup', ()=> dragging = false);
-  canvas.addEventListener('click', ()=>{ if(hoverItem && hoverItem.kind==='insight') open(hoverItem.d.url, '_blank'); });
+  canvas.addEventListener('mousedown', e=>{
+    const n = nodeAt(e.clientX, e.clientY);
+    if(n){ dragNode = n; }
+    else { panning = true; px = e.clientX; py = e.clientY; canvas.style.cursor='grabbing'; }
+  });
+  addEventListener('mouseup', e=>{
+    if(dragNode && dragNode.kind==='post' && hover===dragNode){
+      const [wx,wy] = toWorld(e.clientX, e.clientY);
+      const dx = dragNode.x-wx, dy = dragNode.y-wy;
+      if(dx*dx+dy*dy < 4) window.open(dragNode.d.url, '_blank', 'noopener');
+    }
+    dragNode = null; panning = false; canvas.style.cursor='grab';
+  });
+  canvas.addEventListener('mouseleave', ()=>{ hover=null; tip.style.display='none'; panning=false; });
   canvas.addEventListener('wheel', e=>{
     e.preventDefault();
-    const rc = canvas.getBoundingClientRect();
-    const mx = e.clientX-rc.left, my = e.clientY-rc.top;
-    const nz = Math.min(Math.max(cam.z*(e.deltaY<0 ? 1.1 : 0.9), 0.4), 3);
-    cam.x = mx-(mx-cam.x)*nz/cam.z; cam.y = my-(my-cam.y)*nz/cam.z; cam.z = nz;
-    if(REDUCE) draw();
+    const f = e.deltaY < 0 ? 1.12 : 0.89;
+    const b = canvas.getBoundingClientRect();
+    const mx = e.clientX-b.left-W/2, my = e.clientY-b.top-H/2;
+    ox = mx - (mx-ox)*f; oy = my - (my-oy)*f;
+    scale = Math.min(4, Math.max(0.25, scale*f));
   }, {passive:false});
-  addEventListener('resize', ()=>{ layout(); if(REDUCE) draw(); });
 
-  /* boot: always alive — no reveal phase, no reset */
-  layout();
-  if(REDUCE){ draw(); eventsEl.textContent = 'ambient · static'; }
-  else requestAnimationFrame(frame);
+  /* pre-settle so the graph opens readable */
+  for(let i=0;i<260;i++) tick();
+  if(REDUCE){ alpha = 0; }
+  loop();
 })();
 
 /* ---------- table ---------- */
