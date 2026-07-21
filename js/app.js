@@ -218,7 +218,7 @@ bars('hsaves', ranked(byHook,'saveRate'), ()=> '#4ade80', v=>v.toFixed(1));
 document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
   .map(([k,c])=>`<span><span class="dot" style="background:${c}"></span>${k}</span>`).join('');
 
-/* ---------- graph view: obsidian-style force graph ---------- */
+/* ---------- graph view: obsidian-style graph, stable layout + presentational animation ---------- */
 (function(){
   const canvas = document.getElementById('graph');
   if(!canvas) return;
@@ -235,33 +235,38 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
   if(legend) legend.innerHTML = Object.entries(NICHE_COLORS).map(([n,c])=>
     `<span class="litem"><span class="ldot" style="background:${c}"></span>${n}</span>`).join('');
 
-  /* build nodes: account hub -> niche hubs -> every post */
+  /* nodes: account hub -> niche hubs -> every post (v1 layout, proven stable) */
   const nodes = [], links = [];
-  const center = {label:'@louiseivan', r:22, color:'#e8e8ec', x:0, y:0, vx:0, vy:0, kind:'center'};
+  const center = {label:'@louiseivan', r:22, color:'#e8e8ec', x:0, y:0, vx:0, vy:0, kind:'center', born:0, phase:0};
   nodes.push(center);
   const hubs = {};
   const nicheNames = Object.keys(NICHE_COLORS);
   nicheNames.forEach((name,i)=>{
     const a = i/nicheNames.length*Math.PI*2;
-    const n = {label:name, r:13, color:NICHE_COLORS[name], x:Math.cos(a)*260, y:Math.sin(a)*260, vx:0, vy:0, kind:'niche'};
-    hubs[name]=n; nodes.push(n); links.push({s:center, t:n, len:260, k:0.012});
+    const n = {label:name, r:13, color:NICHE_COLORS[name], x:Math.cos(a)*260, y:Math.sin(a)*260,
+      vx:0, vy:0, kind:'niche', born:200+i*80, phase:Math.random()*Math.PI*2};
+    hubs[name]=n; nodes.push(n); links.push({s:center, t:n, len:260, k:0.012, kind:'spine'});
   });
+  let pi = 0;
   DATA.forEach(d=>{
     const hub = hubs[d.niche]; if(!hub) return;
     const r = d.ok ? Math.max(2.4, Math.min(12, Math.sqrt(d.views)/12)) : 2.2;
     const a = Math.random()*Math.PI*2, dist = 55 + Math.random()*70;
     const n = {label:(d.cap||'(no text)').slice(0,70), r, color:NICHE_COLORS[d.niche],
-      x:hub.x+Math.cos(a)*dist, y:hub.y+Math.sin(a)*dist, vx:0, vy:0, kind:'post', d, hub};
-    nodes.push(n); links.push({s:hub, t:n, len:55+r*7, k:0.02});
+      x:hub.x+Math.cos(a)*dist, y:hub.y+Math.sin(a)*dist, vx:0, vy:0,
+      kind:'post', d, hub, born:750+(pi++)*3.5+Math.random()*250, phase:Math.random()*Math.PI*2};
+    nodes.push(n); links.push({s:hub, t:n, len:55+r*7, k:0.02, kind:'leaf'});
   });
+  const topSet = new Set(nodes.filter(n=>n.kind==='post'&&n.d.ok).sort((a,b)=>b.d.views-a.d.views).slice(0,20));
   const neighbors = new Map();
   nodes.forEach(n=>neighbors.set(n, new Set([n])));
   links.forEach(l=>{ neighbors.get(l.s).add(l.t); neighbors.get(l.t).add(l.s); });
 
-  /* view transform + interaction state */
   let scale = 0.85, ox = 0, oy = 0, W = 0, H = 0, dpr = 1;
-  let hover = null, dragNode = null, panning = false, px = 0, py = 0;
-  let alpha = 1;
+  let hover = null, dragNode = null, panning = false, px0 = 0, py0 = 0;
+  let alpha = 0;
+  const t0 = performance.now();
+  const INTRO = 2400;
 
   function resize(){
     dpr = window.devicePixelRatio || 1;
@@ -269,10 +274,10 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
     canvas.width = W*dpr; canvas.height = H*dpr;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
   }
-  resize(); addEventListener('resize', ()=>{resize(); draw();});
+  resize(); addEventListener('resize', resize);
 
+  /* v1 physics: used for pre-settle and drag reheats only */
   function tick(){
-    /* pairwise repulsion (n^2 is fine at ~430 nodes) */
     for(let i=0;i<nodes.length;i++){
       const a = nodes[i];
       for(let j=i+1;j<nodes.length;j++){
@@ -287,7 +292,6 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
         b.vx -= dx*f; b.vy -= dy*f;
       }
     }
-    /* springs */
     links.forEach(l=>{
       let dx = l.t.x-l.s.x, dy = l.t.y-l.s.y;
       const dl = Math.sqrt(dx*dx+dy*dy)||0.01;
@@ -296,58 +300,129 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
       l.s.vx += dx*f; l.s.vy += dy*f;
       l.t.vx -= dx*f; l.t.vy -= dy*f;
     });
-    /* gentle centering + integrate */
     nodes.forEach(n=>{
       n.vx -= n.x*0.0012; n.vy -= n.y*0.0012;
       if(n===dragNode) { n.vx=0; n.vy=0; return; }
       n.vx *= 0.88; n.vy *= 0.88;
-      n.x += n.vx*alpha; n.y += n.vy*alpha;
+      n.x += n.vx*(alpha||1); n.y += n.vy*(alpha||1);
     });
   }
+  /* settle once, synchronously — layout is final and stable */
+  for(let i=0;i<280;i++) tick();
+  nodes.forEach(n=>{ n.vx=0; n.vy=0; });
 
-  function draw(){
+  /* presentational animation state (never touches physics) */
+  const ease = x => 1-Math.pow(1-x, 3);
+  function birth(t, n){ return REDUCE ? 1 : ease(Math.min(1, Math.max(0,(t-n.born)/600))); }
+  function sway(t, n, ax){ /* tiny ambient float, draw-time only */
+    if(REDUCE || n===dragNode) return 0;
+    const amp = n.kind==='post' ? 2.6 : 1.2;
+    return amp * Math.sin(t*0.00055*(ax?1.13:0.87) + n.phase + (ax?0:2.1));
+  }
+  function nx(t,n){ const b = birth(t,n); const sx = n.kind==='center'?0:(n.kind==='niche'?0:n.hub.x); return sx + (n.x - sx)*b + sway(t,n,1); }
+  function ny(t,n){ const b = birth(t,n); const sy = n.kind==='center'?0:(n.kind==='niche'?0:n.hub.y); return sy + (n.y - sy)*b + sway(t,n,0); }
+
+  /* engagement pulses along links */
+  const pulses = [];
+  const leafLinks = links.filter(l=>l.kind==='leaf');
+  function spawnPulse(){
+    const l = leafLinks[(Math.random()*leafLinks.length)|0];
+    pulses.push({l, t:0, sp:0.006+Math.random()*0.010, r:0.9+Math.random()*1.2, col:l.t.color});
+    if(Math.random() < 0.2){
+      const spine = links.find(s=>s.kind==='spine' && s.t===l.s);
+      if(spine) pulses.push({l:spine, t:0, sp:0.005+Math.random()*0.005, r:1.2, col:l.s.color, delay:260});
+    }
+  }
+
+  function draw(time){
+    const t = time - t0;
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,W,H);
     ctx.save();
     ctx.translate(W/2+ox, H/2+oy); ctx.scale(scale,scale);
     const focus = hover ? neighbors.get(hover) : null;
-    /* links */
+    const vis = n => REDUCE || t >= n.born;
+
     links.forEach(l=>{
-      const lit = focus && (focus.has(l.s) && focus.has(l.t)) && (l.s===hover||l.t===hover);
-      ctx.strokeStyle = lit ? 'rgba(167,139,250,0.55)' : (focus ? 'rgba(140,140,152,0.05)' : 'rgba(140,140,152,0.14)');
+      if(!vis(l.s) || !vis(l.t)) return;
+      const b = Math.min(birth(t,l.s), birth(t,l.t));
+      const lit = focus && focus.has(l.s) && focus.has(l.t) && (l.s===hover||l.t===hover);
+      ctx.strokeStyle = lit ? 'rgba(167,139,250,0.55)' : (focus ? 'rgba(140,140,152,0.05)' : `rgba(140,140,152,${0.14*b})`);
       ctx.lineWidth = (lit?1.4:0.7)/scale;
-      ctx.beginPath(); ctx.moveTo(l.s.x,l.s.y); ctx.lineTo(l.t.x,l.t.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(nx(t,l.s),ny(t,l.s)); ctx.lineTo(nx(t,l.t),ny(t,l.t)); ctx.stroke();
     });
-    /* nodes */
+
+    if(!REDUCE){
+      for(let i=pulses.length-1;i>=0;i--){
+        const p = pulses[i];
+        if(p.delay > 0){ p.delay -= 16; continue; }
+        p.t += p.sp;
+        if(p.t >= 1){ pulses.splice(i,1); continue; }
+        const from = p.l.t, to = p.l.s;      /* post -> hub, hub -> center */
+        if(!vis(from)||!vis(to)) continue;
+        const x = nx(t,from) + (nx(t,to)-nx(t,from))*p.t;
+        const y = ny(t,from) + (ny(t,to)-ny(t,from))*p.t;
+        ctx.globalAlpha = Math.sin(p.t*Math.PI)*0.8;
+        ctx.fillStyle = p.col;
+        ctx.shadowColor = p.col; ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(x, y, p.r/Math.sqrt(scale), 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      ctx.globalAlpha = 1;
+    }
+
     nodes.forEach(n=>{
+      if(!vis(n)) return;
+      const b = birth(t,n);
       const dim = focus && !focus.has(n);
-      ctx.globalAlpha = dim ? 0.12 : 1;
-      if(!dim && (n.kind!=='post' || n===hover)){
-        ctx.shadowColor = n.color; ctx.shadowBlur = n.kind==='post'?10:18;
+      let r = n.r * (0.3 + 0.7*b);
+      let glow = 0;
+      if(!REDUCE){
+        if(n.kind!=='post') r *= 1 + 0.04*Math.sin(t*0.0016 + n.phase);
+        if(topSet.has(n))   glow = 7 + 6*(0.5+0.5*Math.sin(t*0.0028 + n.phase));
+      }
+      ctx.globalAlpha = dim ? 0.12 : Math.min(1, b*1.25);
+      if(!dim && (n.kind!=='post' || n===hover || glow)){
+        ctx.shadowColor = n.color; ctx.shadowBlur = n===hover ? 16 : (n.kind==='post' ? glow : 18);
       }
       ctx.fillStyle = n.color;
-      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(nx(t,n), ny(t,n), r, 0, Math.PI*2); ctx.fill();
       ctx.shadowBlur = 0;
     });
-    /* labels: center + niches always, posts on hover */
+
     ctx.globalAlpha = 1;
     ctx.textAlign = 'center';
     nodes.forEach(n=>{
-      if(n.kind==='post' && n!==hover) return;
+      if(!vis(n) || (n.kind==='post' && n!==hover)) return;
       if(focus && !focus.has(n)) return;
-      ctx.font = (n.kind==='center'?13:n.kind==='niche'?11:10)/scale*Math.min(scale,1.4)+'px Inter, sans-serif';
+      ctx.globalAlpha = birth(t,n);
       ctx.font = ((n.kind==='center'?13:n.kind==='niche'?11:10)/Math.max(scale,0.75))+'px Inter, sans-serif';
       ctx.fillStyle = n.kind==='post' ? '#c9c9d1' : '#9a9aa5';
-      ctx.fillText(n.label, n.x, n.y + n.r + 14/scale);
+      ctx.fillText(n.label, nx(t,n), ny(t,n) + n.r + 14/scale);
     });
     ctx.restore();
   }
 
-  function loop(){
-    if(alpha > 0.02 || dragNode){ tick(); if(!dragNode) alpha *= 0.995; }
-    draw();
+  let lastFrame = 0;
+  function loop(time){
+    if(time - lastFrame < 12) { requestAnimationFrame(loop); return; }
+    lastFrame = time;
+    const t = time - t0;
+    if(!REDUCE && pulses.length < 50 && t > INTRO*0.7 && Math.random() < 0.3) spawnPulse();
+    if(dragNode || alpha > 0.02){ tick(); alpha *= 0.97; }
+    draw(time);
     requestAnimationFrame(loop);
   }
+  /* fallback driver: some embedded browsers throttle rAF when idle; keep the animation playing */
+  if(!REDUCE) setInterval(()=>{
+    const now = performance.now();
+    if(now - lastFrame > 120){ lastFrame = now; 
+      const t = now - t0;
+      if(pulses.length < 50 && t > INTRO*0.7 && Math.random() < 0.3) spawnPulse();
+      if(dragNode || alpha > 0.02){ tick(); alpha *= 0.97; }
+      draw(now);
+    }
+  }, 66);
 
   function toWorld(cx, cy){
     const b = canvas.getBoundingClientRect();
@@ -367,10 +442,10 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
   canvas.addEventListener('mousemove', e=>{
     if(dragNode){
       const [x,y] = toWorld(e.clientX, e.clientY);
-      dragNode.x = x; dragNode.y = y; alpha = Math.max(alpha, 0.3);
+      dragNode.x = x; dragNode.y = y; alpha = 0.35;
       return;
     }
-    if(panning){ ox += e.clientX-px; oy += e.clientY-py; px = e.clientX; py = e.clientY; return; }
+    if(panning){ ox += e.clientX-px0; oy += e.clientY-py0; px0 = e.clientX; py0 = e.clientY; return; }
     const n = nodeAt(e.clientX, e.clientY);
     hover = n;
     canvas.style.cursor = n ? 'pointer' : 'grab';
@@ -392,7 +467,7 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
   canvas.addEventListener('mousedown', e=>{
     const n = nodeAt(e.clientX, e.clientY);
     if(n){ dragNode = n; }
-    else { panning = true; px = e.clientX; py = e.clientY; canvas.style.cursor='grabbing'; }
+    else { panning = true; px0 = e.clientX; py0 = e.clientY; canvas.style.cursor='grabbing'; }
   });
   addEventListener('mouseup', e=>{
     if(dragNode && dragNode.kind==='post' && hover===dragNode){
@@ -412,10 +487,7 @@ document.getElementById('legend').innerHTML = Object.entries(NICHE_COLORS)
     scale = Math.min(4, Math.max(0.25, scale*f));
   }, {passive:false});
 
-  /* pre-settle so the graph opens readable */
-  for(let i=0;i<260;i++) tick();
-  if(REDUCE){ alpha = 0; }
-  loop();
+  requestAnimationFrame(loop);
 })();
 
 /* ---------- table ---------- */
